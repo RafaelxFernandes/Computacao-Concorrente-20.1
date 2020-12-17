@@ -4,12 +4,22 @@
 /* Código: Cálculo concorrente de uma série de valores reais que aproxima o valor de π */
 /* Feito por Rafael da Silva Fernandes */
 
-/* A estratégia usada para minimizar os erros numéricos foi de aplicar a extrapolação de Richardson... */
-/* ... em cima da fórmula de Leibniz para π */
+/* A estratégia usada para minimizar os erros numéricos foi de aplicar a extrapolação de Richardson... 
+   ... em cima da fórmula de Leibniz para π. Em análise numérica, a extrapolação de Richardson é...
+   ... um método de aceleração para sequências, usado para melhorar a convergência de somas estimadas...
+   ... do valor A* = lim h->0 A(h), em que A(h) = A* + C*(h^n) + O(h^(n+1)), ...
+   ... e a extrapolação de Richardson para A(h) é R(h) = A* + O(h^(n+1)). Em geral, é mais fácil...
+   ... obter uma precisão dada utilizando R(h) do que A(h'), sendo h' < h.
+    Em essência, dado um valor de A(h) para vários valores de h, podemos estimar A*...
+    ... extrapolando as estimativas para h = 0. No Método do Trapézio, por exemplo, fornece aproximações...
+    ... de ordem 2; nos métodos de Simpsons fornece aproximações de ordem 4. */
+
 /* Abaixo seguem os links utilizados como referência:*/
 /* https://abelsiqueira.github.io/disciplinas/cm141/2016s2/renata.pdf */
 /* https://pt.wikipedia.org/wiki/F%C3%B3rmula_de_Leibniz_para_%CF%80 */
 /* https://homepages.dcc.ufmg.br/~assuncao/an/Integracao-2.pdf */
+/* https://en.wikipedia.org/wiki/Richardson_extrapolation */
+/* http://www.mat.ufrgs.br/~guidi/grad/MAT01032/calculo_numerico.cap7.pdf */
 
 #include <stdio.h>
 #include <stdlib.h>
