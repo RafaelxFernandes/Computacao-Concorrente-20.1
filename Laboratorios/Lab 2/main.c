@@ -1,6 +1,6 @@
 /* Disciplina: Computacao Concorrente */
 /* Prof.: Silvana Rossetto */
-/* Módulo 1 - Laboratório: 1, Atividade 5 */
+/* Módulo 1 - Laboratório: 2, Atividade */
 /* Código: Multiplicação de matrizes quadradas */
 /* Feito por Rafael da Silva Fernandes */
 
