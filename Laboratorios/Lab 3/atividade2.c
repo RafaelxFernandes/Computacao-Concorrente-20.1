@@ -34,7 +34,6 @@ int main(int argc, char *argv[]){
     double denominadorSequencial; /* Denominador para a extrapolação de Richardson na fórmula de Leibniz */
     
     double piConcorrente = 0;
-    // double denominadorConcorrente;
     
     double tempoInicio, tempoFim, deltaTempo; /* Variáveis para contagem de tempo */
     
