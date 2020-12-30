@@ -1,6 +1,6 @@
 /* Disciplina: Computacao Concorrente */
 /* Prof.: Silvana Rossetto */
-/* Módulo 1 - Laboratório: 1, Atividade 5 */
+/* Módulo 1 - Laboratório: 2, Atividade */
 /* Código: Multiplicação de matrizes quadradas */
 /* Feito por Rafael da Silva Fernandes */
 
@@ -194,3 +194,42 @@ void *multiplica(void *arg){
 
     pthread_exit(NULL);
 }
+
+/* Dimensão/ Threads -> Menor tempo
+
+Dimensão: 500
+Threads: 1 -> Tempo: 0.786247
+Threads: 2 -> Tempo: 0.435553
+===> Aceleração: 1.80516952013
+
+Dimensão: 1000
+Threads: 1 -> Tempo: 6.529348
+Threads: 2 -> Tempo: 3.547579
+===> Aceleração: 1.84050813245
+
+
+Dimensão: 2000
+Threads: 1 -> Tempo: 51.781243
+Threads: 2 -> Tempo: 29.647474
+===> Aceleração: 1.74656508679
+
+
+--------------------------
+
+Dimensão: 500
+Threads: 1 -> Tempo: 0.786247
+Threads: 4 -> Tempo: 0.407184
+===> Aceleração: 1.9309378561
+
+Dimensão: 1000
+Threads: 1 -> Tempo: 6.529348
+Threads: 4 -> Tempo: 3.242182
+===> Aceleração: 2.01387460667
+
+
+Dimensão: 2000
+Threads: 1 -> Tempo: 51.781243
+Threads: 4 -> Tempo: 27.473154
+===> Aceleração: 1.88479426134
+
+*/
