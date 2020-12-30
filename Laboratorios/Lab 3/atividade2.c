@@ -21,7 +21,6 @@
 /* https://en.wikipedia.org/wiki/Richardson_extrapolation */
 /* http://www.mat.ufrgs.br/~guidi/grad/MAT01032/calculo_numerico.cap7.pdf */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -45,7 +44,6 @@ int main(int argc, char *argv[]){
     double denominadorSequencial; /* Denominador para a extrapolação de Richardson na fórmula de Leibniz */
     
     double piConcorrente = 0;
-    // double denominadorConcorrente;
     
     double tempoInicio, tempoFim, deltaTempo; /* Variáveis para contagem de tempo */
     
