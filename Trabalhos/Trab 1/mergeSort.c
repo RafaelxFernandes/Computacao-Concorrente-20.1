@@ -15,12 +15,13 @@
 #include <pthread.h>
 #include "timer.h"
 
-
-// Variáveis globais
 #define NTHREADS 4 // Número de threads
 #define MAX 20 // Número de variáveis do vetor
+
+// Variáveis globais
 int vetor[MAX]; // Vetor de tamanho MAX
 int bloco = 0; // Divisão em blocos para o paralelismo de dados
+pthread_mutex_t mutex; // Variável de lock para exclusão mútua
 
 // Funções utilizadas
 void merge(int baixo, int meio, int alto); // Função merge para juntar duas partes
@@ -37,16 +38,20 @@ int main(void){
     printf("Nosso vetor original é:\n");
     for(int i = 0; i < MAX; i++){
         vetor[i] = rand() % 100;
-        printf("%d ", vetor[i]);
-        if(vetor[i] == vetor[MAX - 1]){
+        
+        if(i == (MAX - 1)){
             printf("%d\n", vetor[i]);
+        } else{
+           printf("%d ", vetor[i]);
         }
     }
     
-
     // Variáveis para contagem de tempo do merge sort
     double tempoInicio, tempoFim, deltaTempo;
     GET_TIME(tempoInicio); // Início da contagem de tempo
+
+    // Inicia o mutex (lock de exclusão mútua)
+    pthread_mutex_init(&mutex, NULL);
 
     // Criação das threads
     pthread_t *tid; // Identificadores das threads no sistema
@@ -70,18 +75,22 @@ int main(void){
     }
 
     // Junção dos 4 blocos finais
-    merge(0, (((MAX/ 2) - 1) / 2), (MAX/ 2) - 1);
-    merge((MAX/ 2), ((MAX/ 2) + (MAX - 1 - (MAX/ 2)/ 2)), MAX - 1);
-    merge(0, ((MAX - 1)/ 2 ), MAX- 1);
+    merge(0, (MAX/ 2 - 1)/ 2, MAX/ 2 - 1); 
+    merge(MAX/ 2, MAX/ 2 + (MAX-1-MAX/ 2)/2, MAX - 1); 
+    merge(0, (MAX - 1)/ 2, MAX - 1); 
+
+    pthread_mutex_destroy(&mutex);
 
     GET_TIME(tempoFim); // Fim da contagem de tempo
 
     // Apresentação do vetor finalmente ordenado
     printf("Vetor ordenado:\n");
     for(int i = 0; i < MAX; i++){
-        printf("%d ", vetor[i]);
-        if(vetor[i] == vetor[MAX - 1]){
+
+        if(i == (MAX - 1)){
             printf("%d\n", vetor[i]);
+        } else{
+           printf("%d ", vetor[i]);
         }
     }
 
@@ -142,13 +151,12 @@ void merge(int baixo, int medio, int alto){
 }
 
 // Função auxiliar para o cálculo do merge sort
-// Foi necessária criar esta função pois não estava conseguindo passar mais de 1 argumento...
-// ... para a função merge_sort_concorrente
 void merge_sort_auxiliar(int baixo, int alto){
 
     // Calculando o valor medio do vetor
     int medio = baixo + ((alto - baixo)/ 2);
 
+    // Avaliando os parâmetros passados
     if(baixo < alto){
         merge_sort_auxiliar(baixo, medio); // Chamando a primeira metade do vetor
         merge_sort_auxiliar(medio + 1, alto); // Chamando a segunda metade do vetor
@@ -159,18 +167,24 @@ void merge_sort_auxiliar(int baixo, int alto){
 // Função executada pelas threads
 void* merge_sort_concorrente(void* arg){
 
+    // Entrada na seção crítica
+    pthread_mutex_lock(&mutex);
+
     int thread_bloco = bloco++; // Qual bloco dos 4 totais
 
-    // Cálculo dos valores baixo e alto
+    // Saída da seção crítica
+    pthread_mutex_unlock(&mutex);
+
+    // Cálculo dos valores baixo, medio e alto
     int baixo = thread_bloco * (MAX/ NTHREADS);
     int alto = (thread_bloco + 1) * (MAX/ NTHREADS) - 1;
-
-    // Avaliando o valor medio
     int medio = baixo + ((alto - baixo)/ 2);
+
+    // Avaliando os valores obtidos
     if(baixo < alto){
-        merge_sort_auxiliar(baixo, medio);
-        merge_sort_auxiliar(medio + 1, alto);
-        merge(baixo, medio, alto);
+        merge_sort_auxiliar(baixo, medio); // Chamando a função merge_sort_auxiliar para a primeira metade
+        merge_sort_auxiliar(medio + 1, alto); // Chamando a função merge_sort_auxiliar segunda metade
+        merge(baixo, medio, alto); // Juntando as duas metades
     }
 
     pthread_exit(NULL);
