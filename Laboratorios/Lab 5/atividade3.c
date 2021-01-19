@@ -1,9 +1,9 @@
 /* Disciplina: Computacao Concorrente */
 /* Prof.: Silvana Rossetto */
-/* Módulo 2 - Laboratório: 5, Atividade 1 */
+/* Módulo 2 - Laboratório: 5, Atividade 3 */
 /* Código: aplicação com o padrão leitores/ escritores, em que
-    sempre que um leitor quiser ler e nao houver escritor escrevendo (pode haver escritor esperando), 
-    ele tem acesso a estrutura de dados.
+    nao há risco de inanição, pois leitores e escritores têm as
+    mesmas chances de acesso a estrutura de dados.
     Leitora: percorre o vetor de inteiros e imprime na tela seu conteudo e a média dos valores encontrados;
     Escritora: modifica o conteudo do vetor escrevendo o valor do seu identificador
     de thread na aplicação na primeira e última posição do vetor, 
@@ -15,13 +15,15 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#define N 4 // número de threads leitoras
-#define M 4 // número de threads escritoras
+#define N 6 // número de threads leitoras
+#define M 6 // número de threads escritoras
 #define TAM 20 // tamanho do vetor
 
 // Variáveis globais
 int leitoras = 0; // contador de threads lendo
+int leitorasEsperando = 0; // estado adicional que contabiliza leitoras esperando para ler
 int escritoras = 0; // contador de threads escrevendo
+int escritorasEsperando = 0; // estado adicional que contabiliza escritoras esperando para escrever
 int vetor[TAM]; // vetor a ser alterado pelas threads
 pthread_mutex_t mutex; // variável de lock para exclusão mútua
 pthread_cond_t condicaoLeitoras, condicaoEscritoras; // variáveis para sincronização
@@ -103,6 +105,8 @@ void iniciaLeitura(int id){
     // Início seção crítica
     pthread_mutex_lock(&mutex);
     printf("L[%d] quer ler\n", id);
+    leitorasEsperando++;
+    printf("Leitoras esperando = %d\n", leitorasEsperando);
 
     while(escritoras > 0){
         printf("L[%d] bloqueou\n", id);
@@ -122,10 +126,14 @@ void fimLeitura(int id){
     // Início seção crítica
     pthread_mutex_lock(&mutex);
     printf("L[%d] terminou de ler\n", id);
+    leitorasEsperando--;
     leitoras--;
+    printf("Leitoras esperando = %d\n", leitorasEsperando);
 
-    if(leitoras == 0){ // Libera 1 thread escritora
-        pthread_cond_signal(&condicaoEscritoras);
+    if(escritorasEsperando > 0){
+        pthread_cond_signal(&condicaoEscritoras); // Libera 1 thread escritora
+    } else{
+        pthread_cond_signal(&condicaoLeitoras); // Libera 1 thread leitora
     }
 
     // Fim seção crítica
@@ -138,8 +146,10 @@ void iniciaEscrita(int id){
     // Início seção crítica
     pthread_mutex_lock(&mutex);
     printf("E[%d] quer escrever\n", id);
+    escritorasEsperando++;
+    printf("Escritoras esperando = %d\n", escritorasEsperando);
 
-    while((leitoras > 0) || (escritoras > 0)){
+    while(escritoras > 0){
         printf("E[%d] bloqueou\n", id);
         pthread_cond_wait(&condicaoEscritoras, &mutex);
         printf("E[%d] desbloqueou\n", id);
@@ -157,10 +167,15 @@ void fimEscrita(int id){
     // Início seção crítica
     pthread_mutex_lock(&mutex);
     printf("E[%d] terminou de escrever\n", id);
+    escritorasEsperando--;
     escritoras--;
+    printf("Escritoras esperando = %d\n", escritorasEsperando);
 
-    pthread_cond_signal(&condicaoEscritoras); // Libera 1 thread escritora
-    pthread_cond_broadcast(&condicaoLeitoras); // Libera todas as threas leitoras
+    if(leitorasEsperando > 0){
+        pthread_cond_signal(&condicaoLeitoras); // Libera 1 thread leitora
+    } else{
+        pthread_cond_signal(&condicaoEscritoras); // Libera 1 thread escritora
+    }
     
     // Fim seção crítica
     pthread_mutex_unlock(&mutex);

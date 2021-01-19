@@ -22,6 +22,7 @@
 // Variáveis globais
 int leitoras = 0; // contador de threads lendo
 int escritoras = 0; // contador de threads escrevendo
+int escritorasEsperando = 0; // estado adicional que contabiliza escritoras esperando para escrever
 int vetor[TAM]; // vetor a ser alterado pelas threads
 pthread_mutex_t mutex; // variável de lock para exclusão mútua
 pthread_cond_t condicaoLeitoras, condicaoEscritoras; // variáveis para sincronização
@@ -104,7 +105,7 @@ void iniciaLeitura(int id){
     pthread_mutex_lock(&mutex);
     printf("L[%d] quer ler\n", id);
 
-    while((leitoras > 0) || (escritoras > 0)){
+    while((escritoras > 0) ||(escritorasEsperando > 0)){
         printf("L[%d] bloqueou\n", id);
         pthread_cond_wait(&condicaoLeitoras, &mutex);
         printf("L[%d] desbloqueou\n", id);
@@ -124,8 +125,7 @@ void fimLeitura(int id){
     printf("L[%d] terminou de ler\n", id);
     leitoras--;
 
-    // Dando prioridade para threads escritoras
-    pthread_cond_signal(&condicaoEscritoras);
+    pthread_cond_signal(&condicaoEscritoras); // Libera 1 thread escritora
 
     // Fim seção crítica
     pthread_mutex_unlock(&mutex);
@@ -137,6 +137,8 @@ void iniciaEscrita(int id){
     // Início seção crítica
     pthread_mutex_lock(&mutex);
     printf("E[%d] quer escrever\n", id);
+    escritorasEsperando++;
+    printf("Escritoras esperando = %d\n", escritorasEsperando);
 
     while((leitoras > 0) || (escritoras > 0)){
         printf("E[%d] bloqueou\n", id);
@@ -144,6 +146,7 @@ void iniciaEscrita(int id){
         printf("E[%d] desbloqueou\n", id);
     }
 
+    escritorasEsperando--;
     escritoras++;
 
     // Fim seção crítica
@@ -157,12 +160,12 @@ void fimEscrita(int id){
     pthread_mutex_lock(&mutex);
     printf("E[%d] terminou de escrever\n", id);
     escritoras--;
+    printf("Escritoras esperando = %d\n", escritorasEsperando);
 
-    pthread_cond_signal(&condicaoEscritoras); // Libera 1 thread escritora
+    pthread_cond_broadcast(&condicaoEscritoras); // Libera todas as threads escritoras
 
-    // Libera as threads leitoras apenas quando não houver threads escritoras
     if(escritoras == 0){
-        pthread_cond_broadcast(&condicaoLeitoras); // Libera todas as threas leitoras    
+        pthread_cond_broadcast(&condicaoLeitoras); // Libera todas as threads leitoras
     }
     
     // Fim seção crítica
@@ -185,7 +188,6 @@ void *leitora(void *arg){
         pthread_mutex_lock(&mutex);
 
         // Imprime vetor
-
         printf("\nVetor atual:\n");
         for(int i = 0; i < TAM; i++){
             if(i == (TAM - 1)){
