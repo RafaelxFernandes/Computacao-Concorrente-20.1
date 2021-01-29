@@ -28,9 +28,8 @@ class PC{
             buffer[in] = item;
             in = (in + 1) % N;
             count++;
-            System.out.println("# count = " + count);
 
-            System.out.println("pc.inserindo(" + id + ")");
+            System.out.println("# P[" + id + "] inseriu " + id);
 
             // Imprime buffer
             System.out.print("# Buffer atualizado = ");
@@ -40,8 +39,6 @@ class PC{
             System.out.println("");
 
             notifyAll();
-
-            System.out.println("pc.insereAcabou(" + id + ")");
         } catch(InterruptedException e){ }
     }
 
@@ -60,7 +57,7 @@ class PC{
             out = (out + 1) % N;
             count--;
 
-            System.out.println("pc.retirando(" + id + ")");
+            System.out.println("# C[" + id + "] consumiu " + item);
 
             // Imprime buffer
             System.out.print("# Buffer atualizado = ");
@@ -70,8 +67,6 @@ class PC{
             System.out.println("");
 
             notifyAll();
-
-            System.out.println("pc.retiraAcabou(" + id + ")");
         } catch(InterruptedException e){ }
     }
 }
