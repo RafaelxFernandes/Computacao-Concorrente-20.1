@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 6 // número total de linhas do arquivo
 #define MAX 60
 
 int main(void){
@@ -55,7 +54,7 @@ int main(void){
         }
     }
 
-    // Gerando linha com números já ordenados
+    // Gerando vetor de 60 elementos com números já ordenados
     fprintf(vetor3, "%d ", MAX);
 
     for(int i = 0; i < MAX; i++){
@@ -66,10 +65,10 @@ int main(void){
         }
     }
 
-    // Gerando linha com números ordenados de forma decrescente
-    fprintf(vetor4, "%d ", MAX/3);
+    // Gerando vetor de 60 elementos com números ordenados de forma decrescente
+    fprintf(vetor4, "%d ", MAX);
 
-    for(int i = MAX/3; i > 0; i--){
+    for(int i = MAX; i > 0; i--){
         if(i == 1){
             fprintf(vetor4, "%d\n", i);
         } else{
@@ -77,7 +76,7 @@ int main(void){
         }
     }
 
-    // Gerando linha com números iguais
+    // Gerando vetor de 15 elementos com números iguais
     fprintf(vetor5, "%d ", MAX/4);
 
     for(int i = 0; i < MAX/4; i++){
