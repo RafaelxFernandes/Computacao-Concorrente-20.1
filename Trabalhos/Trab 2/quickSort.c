@@ -23,14 +23,12 @@ https://stackoverflow.com/questions/36025219/reading-integers-from-a-buffer-into
 #include "timer.h"
 
 #define NTHREADS 31 // número total de threads
-#define TAM 30 // tamanho do vetor a ser ordenado
+#define TAM 60 // tamanho máximo do vetor a ser ordenado
 
 // Variáveis globais
 int vetor[TAM]; // vetor a ser ordenado
 
-
 // Estruturas de dados
-
 
 // Funções utilizadas
 void troca(int esquerda, int direita); // faz a troca entre duas podições no vetor
@@ -42,64 +40,60 @@ void* quickSortConcorrente(void *arg); // função quick sort executada pelas th
 // Fluxo principal 
 int main(void){
 
-    // Importanto numeros.txt e colocando-o no vetor
-    FILE *numeros = fopen("numeros.txt", "r");
-    if(numeros == NULL){
-        printf("---ERRO quickSort.c: problema ao ler numeros.txt\n");
+    // Importanto os arquivos .txt
+    FILE *vetor1 = fopen("vetor1.txt", "r");
+    FILE *vetor2 = fopen("vetor2.txt", "r");
+    FILE *vetor3 = fopen("vetor3.txt", "r");
+    FILE *vetor4 = fopen("vetor4.txt", "r");
+    FILE *vetor5 = fopen("vetor5.txt", "r");
+
+    // Tratamento de erros
+    if((vetor1 == NULL) || (vetor2 == NULL) || (vetor3 == NULL) || (vetor4 == NULL) || (vetor5 == NULL)){
+        printf("---ERRO quickSort.c: problema ao ler arquivo .txt\n");
         exit(-1);
     } else{
-        char linha[256];
-
-        // Pega primeira linha do arquivo numeros.txt
-        fgets(linha, sizeof(linha), numeros);
-        int numeroTotalLinhas = atoi(linha); // número total de linhas do arquivo
-        printf("Número total de linhas com número para serem ordenados é: %d\n", numeroTotalLinhas - 1);
+        // Primeiro elemento do vetor é o total de elementos a serem ordenados
+        // Necessário alterar primeiro parâmetro para testar outro arquivo
+        fscanf(vetor4, "%d", &vetor[0]); 
+        int numeroElementos = vetor[0];
+        printf("Quantidade total de elementos do vetor selecionado = %d\n", numeroElementos);
         
-        int numeroLinha; // número da linha desejada (inicia em 1)
-        printf("Entre com o valor da linha desejada: ");
-        scanf("%d", &numeroLinha);
-
-        // Lê linha desejada
-        printf("Linha desejada: %d\n\n", numeroLinha);
-        for(int i = 1; i < numeroTotalLinhas; i++){
-            fgets(linha, sizeof(linha), numeros);
-            printf("Números da linha %d = %s\n", i, linha);
-            
-            if(i == numeroLinha){
-                for(int j = 0; j < TAM; j++){
-                    // ToDo: sscanf está alterando o vetor da linha desejada. Por que?
-                    sscanf(&linha[j], "%d", &vetor[j]);
-                }
-            }    
+        for(int j = 0; j < numeroElementos; j++){
+            // Necessário alterar primeiro parâmetro para testar outro arquivo
+            fscanf(vetor4, "%d", &vetor[j]); 
         }
 
-        fclose(numeros);
+        // Imprimindo vetor original
+        printf("\nVetor original:\n");
+        for(int i = 0; i < numeroElementos; i++){
+            if(i == (numeroElementos - 1)){
+                printf("%d\n", vetor[i]);
+            } else{
+                printf("%d ", vetor[i]);
+            }
+        }
+
+        // Testando código
+        quickSortSequencial(0, numeroElementos-1);
+
+        // Imprimindo vetor ordenado
+        printf("\nVetor ordenado:\n");
+        for(int i = 0; i < numeroElementos; i++){
+            if(i == (numeroElementos -1)){
+                printf("%d\n", vetor[i]);
+            } else{
+                printf("%d ", vetor[i]);
+            }
+        }
+
+        fclose(vetor1);
+        fclose(vetor2);
+        fclose(vetor3);
+        fclose(vetor4);
+        fclose(vetor5);
+
+        return 0;
     }    
-
-    // Imprimindo vetor original
-    printf("\nVetor original:\n");
-    for(int i = 0; i < TAM; i++){
-        if(i == (TAM - 1)){
-            printf("%d\n", vetor[i]);
-        } else{
-            printf("%d ", vetor[i]);
-        }
-    }
-
-    // Testando código
-    quickSortSequencial(0, TAM-1);
-
-    // Imprimindo vetor ordenado
-    printf("\nVetor ordenado:\n");
-    for(int i = 0; i < TAM; i++){
-        if(i == (TAM -1)){
-            printf("%d\n", vetor[i]);
-        } else{
-            printf("%d ", vetor[i]);
-        }
-    }
-
-    return 0;
 }
 
 // Método para fazer a troca de dados entre as duas posições no vetor
