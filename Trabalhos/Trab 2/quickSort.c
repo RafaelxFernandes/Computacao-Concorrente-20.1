@@ -22,13 +22,13 @@ https://stackoverflow.com/questions/36025219/reading-integers-from-a-buffer-into
 #include <semaphore.h>
 #include "timer.h"
 
-#define NTHREADS 31 // número total de threads
-#define TAM 60 // tamanho máximo do vetor a ser ordenado
+#define NTHREADS 4 // número total de threads
+#define MAX 60 // tamanho máximo do vetor a ser ordenado
 
 // Variáveis globais
-int vetor[TAM]; // vetor a ser ordenado
-
-// Estruturas de dados
+int vetor[MAX]; // vetor a ser ordenado
+int numeroElementos; // número de elementos do vetor
+sem_t semaforoBinario; // semáforo binário
 
 // Funções utilizadas
 void troca(int esquerda, int direita); // faz a troca entre duas podições no vetor
@@ -40,41 +40,83 @@ void* quickSortConcorrente(void *arg); // função quick sort executada pelas th
 // Fluxo principal 
 int main(void){
 
+    // Variáveis para contagem de tempo
+    double tempoInicio, tempoFim, deltaTempo;
+    GET_TIME(tempoInicio); // início da contagem de tempo
+
     // Importanto os arquivos .txt
     FILE *vetor1 = fopen("vetor1.txt", "r");
     FILE *vetor2 = fopen("vetor2.txt", "r");
     FILE *vetor3 = fopen("vetor3.txt", "r");
     FILE *vetor4 = fopen("vetor4.txt", "r");
     FILE *vetor5 = fopen("vetor5.txt", "r");
+    
+    // >>> Necessário alterar primeiro parâmetro para testar outro arquivo <<<
+    fscanf(vetor1, "%d", &vetor[0]); 
+    numeroElementos = vetor[0];
+
+    pthread_t tid[NTHREADS];
+    int threadID, *id;
+
+    // Inicializa semáforo
+    sem_init(&semaforoBinario, 0, 1); 
 
     // Tratamento de erros
     if((vetor1 == NULL) || (vetor2 == NULL) || (vetor3 == NULL) || (vetor4 == NULL) || (vetor5 == NULL)){
         printf("---ERRO quickSort.c: problema ao ler arquivo .txt\n");
         exit(-1);
-    } else{
+    } else{ // Executa código
+
+        printf("Número total de threads = %d\n", NTHREADS);
+
         // Primeiro elemento do vetor é o total de elementos a serem ordenados
-        // Necessário alterar primeiro parâmetro para testar outro arquivo
-        fscanf(vetor4, "%d", &vetor[0]); 
-        int numeroElementos = vetor[0];
         printf("Quantidade total de elementos do vetor selecionado = %d\n", numeroElementos);
         
         for(int j = 0; j < numeroElementos; j++){
-            // Necessário alterar primeiro parâmetro para testar outro arquivo
-            fscanf(vetor4, "%d", &vetor[j]); 
+            // >>> Necessário alterar primeiro parâmetro para testar outro arquivo <<<
+            fscanf(vetor1, "%d", &vetor[j]); 
         }
 
         // Imprimindo vetor original
         printf("\nVetor original:\n");
         for(int i = 0; i < numeroElementos; i++){
             if(i == (numeroElementos - 1)){
-                printf("%d\n", vetor[i]);
+                printf("%d\n\n", vetor[i]);
             } else{
                 printf("%d ", vetor[i]);
             }
         }
 
-        // Testando código
-        quickSortSequencial(0, numeroElementos-1);
+        // Execução quick sort
+        if(numeroElementos <= NTHREADS){ // executa versão sequencial
+            quickSortSequencial(0, numeroElementos - 1);
+        } else{ // executa versão concorrente
+
+            for(threadID = 0; threadID < NTHREADS; threadID++){
+                // Aloca espaço para o identificador da thread
+                if((id = malloc(sizeof(int))) == NULL){
+                    pthread_exit(NULL);
+                    return 1;
+                }
+
+                *id = threadID;
+
+                // Criação das threads
+                if(pthread_create(&tid[threadID], NULL, quickSortConcorrente, (void *) id)){
+                    printf("---ERRO pthread_create\n");
+                    return 2;
+                }
+            }
+
+            // Aguarda o término das threads
+            for(int i = 0; i < NTHREADS; i++){
+                pthread_join(*(tid + i), NULL);
+            }
+
+            free(id);
+        }
+
+        GET_TIME(tempoFim); // fim da contagem de tempo
 
         // Imprimindo vetor ordenado
         printf("\nVetor ordenado:\n");
@@ -85,6 +127,10 @@ int main(void){
                 printf("%d ", vetor[i]);
             }
         }
+
+        // Cálculo do tempo decorrido
+        deltaTempo = tempoFim - tempoInicio;
+        printf("\nTempo decorrido = %lf\n", deltaTempo);
 
         fclose(vetor1);
         fclose(vetor2);
@@ -108,7 +154,7 @@ void troca(int esquerda, int direita){
 int particionamento(int inicio, int fim){
     int posicaoPivo = inicio; // posição do pivô no vetor
 
-    // Eleemento atual é menor igual ao pivõ?
+    // Elemento atual é menor ou igual ao pivõ?
     for(int i = inicio; i < fim; i++){
         if(vetor[i] <= vetor[fim]){
             troca(posicaoPivo++, i);
@@ -128,4 +174,30 @@ void quickSortSequencial(int inicio, int fim){
         quickSortSequencial(inicio, pivo - 1);
         quickSortSequencial(pivo + 1, fim);
     }
+}
+
+// Quick sort concorrente
+// Utilizando caso o número de threads seja menor do que o número de elementos do vetor
+void* quickSortConcorrente(void *arg){
+    
+    int *threadID = (int*) arg; // identificador da thread
+    printf("Thread %d está executando...\n", *threadID);
+
+    // Início seção crítica
+    sem_wait(&semaforoBinario);
+
+    int pivo = particionamento(0, (numeroElementos - 1));
+
+    if(pivo > 1){
+        quickSortSequencial(0, pivo);
+    } if((numeroElementos - 1) > (pivo + 1)){
+        quickSortSequencial((pivo + 1), (numeroElementos - pivo - 1));
+    }
+
+    // Fim seção crítica
+    sem_post(&semaforoBinario);
+
+    printf("Thread %d terminou\n", *threadID);
+    free(arg);
+    pthread_exit(NULL);
 }
