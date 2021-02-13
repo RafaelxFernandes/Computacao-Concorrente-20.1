@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 6 // número total de linhas do arquivo
 #define MAX 60
 
 int main(void){
@@ -66,7 +65,7 @@ int main(void){
         }
     }
 
-    // Gerando linha com números ordenados de forma decrescente
+    // Gerando vetor de 60 elementos com números ordenados de forma decrescente
     fprintf(vetor4, "%d ", MAX);
 
     for(int i = MAX; i > 0; i--){
