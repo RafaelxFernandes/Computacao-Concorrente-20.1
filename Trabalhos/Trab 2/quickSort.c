@@ -12,8 +12,6 @@ https://www.ime.usp.br/~pf/algoritmos/aulas/quick.html
 https://software.intel.com/content/www/us/en/develop/articles/an-efficient-parallel-three-way-quicksort-using-intel-c-compiler-and-openmp-45-library.html
 https://www.cs.cmu.edu/afs/cs/academic/class/15213-s13/www/lectures/26-parallelism.pdf
 https://blog.pantuza.com/artigos/o-algoritmo-de-ordenacao-quicksort
-https://stackoverflow.com/questions/21114591/c-programming-read-specific-line-from-text-file
-https://stackoverflow.com/questions/36025219/reading-integers-from-a-buffer-into-an-array-in-c
 */
 
 #include <stdio.h>
@@ -22,7 +20,7 @@ https://stackoverflow.com/questions/36025219/reading-integers-from-a-buffer-into
 #include <semaphore.h>
 #include "timer.h"
 
-#define NTHREADS 4 // número total de threads
+#define NTHREADS 1 // número total de threads
 #define MAX 60 // tamanho máximo do vetor a ser ordenado
 
 // Variáveis globais
@@ -88,7 +86,7 @@ int main(void){
         }
 
         // Execução quick sort
-        if(numeroElementos <= NTHREADS){ // executa versão sequencial
+        if((numeroElementos <= NTHREADS) || (NTHREADS == 1)){ // executa versão sequencial
             quickSortSequencial(0, numeroElementos - 1);
         } else{ // executa versão concorrente
 
