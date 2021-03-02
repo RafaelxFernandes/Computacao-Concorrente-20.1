@@ -20,7 +20,7 @@ https://blog.pantuza.com/artigos/o-algoritmo-de-ordenacao-quicksort
 #include <semaphore.h>
 #include "timer.h"
 
-#define NTHREADS 1 // número total de threads
+#define NTHREADS 14 // número total de threads
 #define MAX 60 // tamanho máximo do vetor a ser ordenado
 
 // Variáveis globais
@@ -50,7 +50,7 @@ int main(void){
     FILE *vetor5 = fopen("vetor5.txt", "r");
     
     // >>> Necessário alterar primeiro parâmetro para testar outro arquivo <<<
-    fscanf(vetor1, "%d", &vetor[0]); 
+    fscanf(vetor5, "%d", &vetor[0]); 
     numeroElementos = vetor[0];
 
     pthread_t tid[NTHREADS];
@@ -72,7 +72,7 @@ int main(void){
         
         for(int j = 0; j < numeroElementos; j++){
             // >>> Necessário alterar primeiro parâmetro para testar outro arquivo <<<
-            fscanf(vetor1, "%d", &vetor[j]); 
+            fscanf(vetor5, "%d", &vetor[j]); 
         }
 
         // Imprimindo vetor original
